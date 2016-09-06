@@ -25,11 +25,11 @@ let g:Powerline_symbols = 'fancy'
 """"""""""""""""""""""""""""""""""""""""
 """""""""""""indent"""""""""""""""""""""
 """"""""""""""""""""""""""""""""""""""""
-autocmd FileType python setlocal tabstop=4 shiftwidth=4 softtabstop=4 textwidth=79 expandtab
+" autocmd FileType python setlocal tabstop=4 shiftwidth=4 softtabstop=4 textwidth=79 expandtab
 set shiftwidth=4 softtabstop=4 tabstop=4 expandtab
 " Attempt to determine the type of a file based on its name and possibly its contents. Use this to allow intelligent auto-indenting for each filetype, and for plugins that are filetype specific.
 filetype indent plugin on
-let g:indent_guides_enable_on_vim_startup=1 "auto start
+" let g:indent_guides_enable_on_vim_startup=1 "auto start toggle it by [leader]ig
 let g:indent_guides_start_level=3 "start guide after indent lever 3
 let g:indent_guides_guide_size=1 "width of the colored guide
 let g:indent_guides_auto_colors = 0

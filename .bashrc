@@ -2,7 +2,7 @@
 
 # Source global definitions
 if [ -f /etc/bashrc ]; then
-	. /etc/bashrc
+    . /etc/bashrc
 fi
 
 # User specific aliases and functions
@@ -36,8 +36,8 @@ export dscr='lz91@dscr-slogin-01.oit.duke.edu'
 
 # Applications 
 export PATH=$HOME/bin:$PATH
-export PATH="/home/lz91/bin/Mathematica/10.4/Executables":$PATH
-export PATH="~/bin/customizedscripts":$PATH
+export PATH="$HOME/bin/Mathematica/10.4/Executables":$PATH
+export PATH="$HOME/bin/customizedscripts":$PATH
 #export PATH="/home/software/nwchem-6.5/bin":$PATH
 #export PATH="/home/software/nwchem-6.5-et1-old/bin":$PATH
 #export PATH="/home/software/openmpi-1.8.6/bin":$PATH
@@ -53,12 +53,12 @@ up (){
         local d=""
         limit=$1
         for ((i=1; i<=limit; i++))
-                do
-                        d=$d/..
-                done
+            do
+                d=$d/..
+            done
         d=$(echo $d | sed 's/^\///')
         if [ -z "$d" ]; then
-                d=..
+            d=..
         fi
         cd $d
 }
@@ -102,50 +102,50 @@ rmempty()
 
 # generate correct geometry format from Chem3D output .xyz file
 chemdrawxyz(){
-	if [[ "$#" -eq "1" ]];then
-		tail -n+2 $1 | awk '{printf(" %3s \t%14s \t%14s \t%14s\n",$2,$3,$4,$5)}' > $1.tmp
-		mv $1.tmp $1
-	else
-		echo "Insufficient arguments"
-		echo "Syntex: chemdrawxyz filename"
+    if [[ "$#" -eq "1" ]];then
+        tail -n+2 $1 | awk '{printf(" %3s \t%14s \t%14s \t%14s\n",$2,$3,$4,$5)}' > $1.tmp
+        mv $1.tmp $1
+    else
+        echo "Insufficient arguments"
+        echo "Syntex: chemdrawxyz filename"
 
-	fi
+    fi
 }
 # extract the coordinates from NWChem geometry optimization files
 coordinates(){
-	if [[ ! -z "$1" ]];then
-		awk '/Output coordinate/{r=""};/Output coordinate/,/Atomic Mass/{r=(r=="")? $0 : r RS $0};END{print r}' $1 | head -n-2 | tail -n+5 | awk '{printf(" %3s \t%14s \t%14s \t%14s\n",$2,$4,$5,$6)}' > ${1%.*}.xyz
-	else
-		echo "Insufficient arguments: coordinates filename"
-	fi
+    if [[ ! -z "$1" ]];then
+        awk '/Output coordinate/{r=""};/Output coordinate/,/Atomic Mass/{r=(r=="")? $0 : r RS $0};END{print r}' $1 | head -n-2 | tail -n+5 | awk '{printf(" %3s \t%14s \t%14s \t%14s\n",$2,$4,$5,$6)}' > ${1%.*}.xyz
+    else
+        echo "Insufficient arguments: coordinates filename"
+    fi
 }
 # extract the coordinates from sqm geometry optimization files
 sqmcoordinates(){
-	if [[ ! -z "$1" ]];then
-		awk '/Final Structure/{r=""};/Final Structure/,/Calculation Completed/{r=(r=="")? $0 : r RS $0};END{print r}' $1 | head -n-2 | tail -n+5 | awk '{printf(" %3s \t%14s \t%14s \t%14s\n",$4,$5,$6,$7)}' > ${1%.*}_sqm.xyz
-	else
-		echo "Insufficient arguments"
-	fi
+    if [[ ! -z "$1" ]];then
+        awk '/Final Structure/{r=""};/Final Structure/,/Calculation Completed/{r=(r=="")? $0 : r RS $0};END{print r}' $1 | head -n-2 | tail -n+5 | awk '{printf(" %3s \t%14s \t%14s \t%14s\n",$4,$5,$6,$7)}' > ${1%.*}_sqm.xyz
+    else
+        echo "Insufficient arguments"
+    fi
 }
 # extract the orbitals from NWChem output files
 orbitals(){
-	if [[ ! -z "$1" ]];then
-		awk '/DFT Final Molecular Orbital Analysis/{r=""};/DFT Final Molecular Orbital Analysis/,/center of mass/{r=(r=="")? $0 : r RS $0};END{print r}' $1 > $1.fullorbene
-		awk '/DFT Final Molecular Orbital Analysis/{r=""};/DFT Final Molecular Orbital Analysis/,/center of mass/{r=(r=="")? $0 : r RS $0};END{print r}' $1 | grep 'Vector' > $1.fullorb
-		cut -c 35-48 $1.fullorb | sed 's/D/E/' | awk '{ print sprintf("%.8f", $1); }' > $1.orb2.tmp
-		awk '{print $2}' $1.fullorb > $1.orb1.tmp
-		paste $1.orb1.tmp $1.orb2.tmp | column -s $'\t' -t > $1.orb.tmp
-        	awk -F" " -v name="Energy levels  $1" 'BEGIN {print name; print "level\tEnergy (a.u.)\tEnergy (eV)";}
-                	{$(NF+1)=sprintf("%.7f", $2*27.21138505);}1' OFS="\t" $1.orb.tmp > $1.orb
-		rm -f $1.orb1.tmp $1.orb2.tmp $1.orb.tmp
-		awk '/2.000000/{a=$0};/0.000000/{print a;print $0;exit}' $1.fullorb > $1.hl
-		cut -c 35-48 $1.hl | sed 's/D/E/' | awk '{ print sprintf("%.8f", $1); }' > $1.hl.tmp
-        	awk -F" " -v name="HOMO/LUMO  $1" 'BEGIN {print name; print "Energy (a.u.)\tEnergy (eV)";}
-                	{$(NF+1)=sprintf("%.7f", $1*27.21138505);}1' OFS="\t" $1.hl.tmp > $1.hl
-		rm $1.hl.tmp
-	else
-		echo "Insufficient arguments"
-	fi
+    if [[ ! -z "$1" ]];then
+        awk '/DFT Final Molecular Orbital Analysis/{r=""};/DFT Final Molecular Orbital Analysis/,/center of mass/{r=(r=="")? $0 : r RS $0};END{print r}' $1 > $1.fullorbene
+        awk '/DFT Final Molecular Orbital Analysis/{r=""};/DFT Final Molecular Orbital Analysis/,/center of mass/{r=(r=="")? $0 : r RS $0};END{print r}' $1 | grep 'Vector' > $1.fullorb
+        cut -c 35-48 $1.fullorb | sed 's/D/E/' | awk '{ print sprintf("%.8f", $1); }' > $1.orb2.tmp
+        awk '{print $2}' $1.fullorb > $1.orb1.tmp
+        paste $1.orb1.tmp $1.orb2.tmp | column -s $'\t' -t > $1.orb.tmp
+            awk -F" " -v name="Energy levels  $1" 'BEGIN {print name; print "level\tEnergy (a.u.)\tEnergy (eV)";}
+                    {$(NF+1)=sprintf("%.7f", $2*27.21138505);}1' OFS="\t" $1.orb.tmp > $1.orb
+        rm -f $1.orb1.tmp $1.orb2.tmp $1.orb.tmp
+        awk '/2.000000/{a=$0};/0.000000/{print a;print $0;exit}' $1.fullorb > $1.hl
+        cut -c 35-48 $1.hl | sed 's/D/E/' | awk '{ print sprintf("%.8f", $1); }' > $1.hl.tmp
+            awk -F" " -v name="HOMO/LUMO  $1" 'BEGIN {print name; print "Energy (a.u.)\tEnergy (eV)";}
+                    {$(NF+1)=sprintf("%.7f", $1*27.21138505);}1' OFS="\t" $1.hl.tmp > $1.hl
+        rm $1.hl.tmp
+    else
+        echo "Insufficient arguments"
+    fi
 }
 # grep the energy and oscillator strength data from the NWChem TDDFT output files, and calculate the integrated OS
 dos () {
@@ -199,7 +199,7 @@ ene () {
     if [[ ! -z "$1" ]];then
         awk '/'Vector'/ {print $2 $3 $4}' $1 > $1.ene
     else
-    	echo "Insufficient arguments"
+        echo "Insufficient arguments"
     fi
 }
 
@@ -255,20 +255,20 @@ dup (){
 }
 # change nodes
 to_et1_old(){
-	if [[ -s "$1.sh" ]];then
-		sed -i 's/SBATCH -p et2/SBATCH -p et1_old/g;s/6.5-et2/6.5-et1_old_multinode/g' $1.sh 
-		vi $1.sh
-	else
-		echo "File $1.sh does not exist."
-	fi
+    if [[ -s "$1.sh" ]];then
+        sed -i 's/SBATCH -p et2/SBATCH -p et1_old/g;s/6.5-et2/6.5-et1_old_multinode/g' $1.sh 
+        vi $1.sh
+    else
+        echo "File $1.sh does not exist."
+    fi
 }
 to_et2(){
-	if [[ -s "$1.sh" ]];then
-		sed -i 's/SBATCH -p et1_old/SBATCH -p et2/g;s/6.5-et1_old_multinode/6.5-et2/g' $1.sh
-		vi $1.sh
-	else
-		echo "File $1.sh does not exist."
-	fi
+    if [[ -s "$1.sh" ]];then
+        sed -i 's/SBATCH -p et1_old/SBATCH -p et2/g;s/6.5-et1_old_multinode/6.5-et2/g' $1.sh
+        vi $1.sh
+    else
+        echo "File $1.sh does not exist."
+    fi
 }
 
 # submit jobs in batch
@@ -291,5 +291,7 @@ sbatchfiles(){
 }
 # gcc compiler
 gccp(){
-	gcc -o $1 $1.c -lm
+    if [[ -s $1 ]];then
+        gcc -o ${1%.*} $1 -lm
+    fi
 }
