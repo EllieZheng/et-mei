@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# to execute it: findpoint.sh c4h6_b_t_tda_field $lowlimit $uplimit $grid $min $max $interval
+
+python $HOME/bin/customizedscripts/findpoint.py $@
