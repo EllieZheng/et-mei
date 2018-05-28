@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# This file is to generate .q(.sh)/.nw files for geometry optimization 
+# Default is pvtz, b3lyp
+# filename=$1, extension(method)=$2, memory=$3, nodes=$4 ntasks=$5 -p=$6
+filename=$1;
+
+if [[ -s "${filename}.nw" || -s "${filename}.q" ]];then
+    sed -i "s/scratch\/04644\/tg839437/scr\/lz91/" ${filename}.nw
+    sed -i "s/scratch\/04644\/tg839437/scr\/lz91/" ${filename}.q
+    sed -i "s/#SBATCH -p normal/#SBATCH -p et3/" ${filename}.q
+    sed -i "s/#SBATCH -t 2-00:00:00/#SBATCH -t 10-00:00:00/" ${filename}.q
+    sed -i "s/module load nwchem\/6.6/module load nwchem\/openmpi\/6.6-et2/" ${filename}.q
+    sed -i "s/ibrun nwchem/mpiexec nwchem/" ${filename}.q
+    sed -i "s/ibrun/srun/" ${filename}.q
+    sed -i "6i#SBATCH --mem-per-cpu=1500" ${filename}.q
+    sed -i "11iexport ARMCI_DEFAULT_SHMMAX=2000" ${filename}.q
+else
+    echo "Insufficient argument: qstampede filename"
+fi

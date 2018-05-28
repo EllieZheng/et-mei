@@ -28,7 +28,7 @@ let g:Powerline_symbols = 'fancy'
 " autocmd FileType python setlocal tabstop=4 shiftwidth=4 softtabstop=4 textwidth=79 expandtab
 set shiftwidth=4 softtabstop=4 tabstop=4 expandtab
 " Attempt to determine the type of a file based on its name and possibly its contents. Use this to allow intelligent auto-indenting for each filetype, and for plugins that are filetype specific.
-filetype indent plugin on
+"filetype indent plugin on
 " let g:indent_guides_enable_on_vim_startup=1 "auto start toggle it by [leader]ig
 let g:indent_guides_start_level=3 "start guide after indent lever 3
 let g:indent_guides_guide_size=1 "width of the colored guide
@@ -36,7 +36,7 @@ let g:indent_guides_auto_colors = 0
 autocmd VimEnter,Colorscheme * :hi IndentGuidesOdd  ctermbg=237
 autocmd VimEnter,Colorscheme * :hi IndentGuidesEven ctermbg=236
 " When opening a new line and no filetype-specific indenting is enabled, keep the same indent as the line you're currently on. Useful for READMEs, etc.
-set autoindent
+" set autoindent
  
 
 
@@ -69,4 +69,26 @@ set backspace=2
 " Use visual bell instead of beeping when doing something wrong
 set visualbell
 
+                                                                                                                                                              
+""""""""""""""""""""""""""""""""""""""""
+""""""""""""""" split """"""""""""""""""
+""""""""""""""""""""""""""""""""""""""""
+set splitbelow
+set splitright
+nnoremap <C-J> <C-W><C-J>
+nnoremap <C-K> <C-W><C-K>
+nnoremap <C-L> <C-W><C-L>
+nnoremap <C-H> <C-W><C-H>
+
+""""""""""""""""""""""""""""""""""""""""
+"""""""""""" copy & paste """"""""""""""
+""""""""""""""""""""""""""""""""""""""""
+" copy to register a or b or c
+vnoremap ya "ay 
+vnoremap yb "by 
+vnoremap yc "cy 
+" paste from register a or b or c
+nnoremap pa "ap 
+nnoremap pb "bp 
+nnoremap pc "cp 
 

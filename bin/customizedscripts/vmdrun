@@ -1,0 +1,3 @@
+#!/bin/bash
+
+vmd -dispdev text -e $1

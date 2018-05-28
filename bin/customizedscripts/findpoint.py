@@ -4,9 +4,9 @@ import numpy
 import os
 
 print('This program calculates the integrated OS below a certain cutoff excitation energy')
-if len(sys.argv) < 8:
+if len(sys.argv) < 9:
     print('Insufficient argument.')
-    print('Usage: findpoint c4h6_b_t_tda_field $lowlimit $uplimit $grid $min $max $interval')
+    print('Usage: findpoint c4h6_b_t_tda_field lowlimit uplimit grid min max interval unit(3 or 4)')
     exit()
 outputfile = sys.argv[1]
 lowlimit = int(sys.argv[2])
@@ -17,16 +17,18 @@ maxene = float(sys.argv[6])
 interval = float(sys.argv[7])
 moleculename = os.path.splitext(outputfile)[0]
 fout = open('joint_'+moleculename+'_from_'+sys.argv[2]+'_to_'+sys.argv[3]+'.point','w')
+unit = pow(10, -int(sys.argv[8]))
+au = 514.2
 
 #print the title, i.e., the cutoff energies
-print('field   ',file=fout, end="")
+print('field(au)  field(V/nm)  ',file=fout, end="")
 for ene in numpy.arange(minene, maxene, interval):
-    print('%.5f   ' % ene,file=fout, end="")
+    print('%.2f eV   ' % ene,file=fout, end="")
 print('\n',file=fout, end="")
 
 #Loop through all the files, i.e., field strength
 for field in range(lowlimit, uplimit+grid, grid):
-    print(field, file=fout, end="")
+    print("%.4f   %.4f" % (float(field)*unit, float(field)*unit*au), file=fout, end="")
     filename = moleculename+'_'+str(field)
     try:
         fdos = open(filename+'.out.DOSD')
@@ -41,7 +43,7 @@ for field in range(lowlimit, uplimit+grid, grid):
     for cutoff in numpy.arange(minene, maxene, interval):
         status = 0
         lastene = 0
-        lastios = 0
+        lastios = '0'
         for line in fdos:
             energy = float(line.strip().split()[0])
             if energy > cutoff:

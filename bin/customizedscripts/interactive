@@ -1,0 +1,5 @@
+#!/bin/bash
+
+srun -p et3 --mem=1500mb -n 1 -t 10000 --pty bash
+sqlz
+

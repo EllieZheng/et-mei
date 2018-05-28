@@ -11,6 +11,8 @@ export TERM=xterm-256color
 # don't put duplicate lines or lines starting with space in the history.
 # See bash(1) for more options
 HISTCONTROL=ignoreboth
+export PS1default=${debian_chroot:+($debian_chroot)}\u@\h:\w\$
+export PS1='${debian_chroot:+($debian_chroot)}\[\033[00;32m\]\u@\h: \[\033[00;34;1m\]\w \$ \[\033[0m\]'
 
 # append to the history file, don't overwrite it
 shopt -s histappend
@@ -22,31 +24,47 @@ HISTFILESIZE=2000
 # some more ls aliases
 alias la='ls -alh --color=auto'
 alias ll='ls -CFlh --color=auto'
+alias vim='/home/zc62/local/bin/vim'
+alias ds='dirs -v'
+alias cleards='dirs -c'
+alias space='du -sh | sort -h'
+alias mybin='cd ~/bin/customizedscripts'
 
 # Add an "alert" alias for long running commands.  Use like so:
 #   sleep 10; alert
 alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo error)" "$(history|tail -n1|sed -e '\''s/^\s*[0-9]\+\s*//;s/[;&|]\s*alert$//'\'')"'
 
 # slurm commands
-alias sqlz='squeue -o "%.9i %.9P %.40j %.8u %.2t %.10M %.6D %R" -u lz91'
-alias sqet='squeue -o "%.9i %.9P %.40j %.8u %.2t %.10M %.6D %R" -p et2,et1_old,et1_new,et2fast'
+alias sqlz='date;squeue -o "%.9i %.9P %.40j %.8u %.2t %.10M %.6D %R" -u lz91'
+alias sqet='squeue -o "%.9i %.9P %.40j %.8u %.2t %.10M %.6D %R" -p et2,et1_old,et1_new,et3,et3short,et2_medmem,et3_medmem'
+alias sqet3='squeue -o "%.9i %.9P %.40j %.8u %.2t %.10M %.6D %R" -p et3,et3_medmem'
 alias etmem='scontrol -o show nodes | awk '"'"' {print $1,"\t", $4,"\t", $6,"\t", $14,"\t", $15,"\t", $18}'"'"' | grep "et"'
+alias etinfo='sinfo | grep "et"'
 export dnb03='lz91@dnb03.chem.duke.edu'
 export dscr='lz91@dscr-slogin-01.oit.duke.edu'
+export ece551='lz91@colab-sbx-35.oit.duke.edu'
+export xsede='lz91@login.xsede.org'
+export stampede='tg839437@stampede.tacc.xsede.org'
+export bin='~/bin/customizedscripts'
 
 # Applications 
-export PATH=$HOME/bin:$PATH
+export PATH="$HOME/bin":$PATH
 export PATH="$HOME/bin/Mathematica/10.4/Executables":$PATH
 export PATH="$HOME/bin/customizedscripts":$PATH
+export PATH="$HOME/bin/customizedscripts/md":$PATH
+export PATH="/home/software/VMD.1.9.2/lib/vmd/plugins/LINUXAMD64/bin/catdcd5.1":$PATH
 #export PATH="/home/software/nwchem-6.5/bin":$PATH
 #export PATH="/home/software/nwchem-6.5-et1-old/bin":$PATH
 #export PATH="/home/software/openmpi-1.8.6/bin":$PATH
 #source /usr/local/bin/compilervars.sh intel64
 module load g09
+module load g16.A.03_newpgi
 module load matlab
 module load ghemical
 module load amber14
 module load pqs
+module load vmd/1.9.2
+module load namd/2.11b1-infiniband
 
 # use "up 4" instead of cd ../../../..
 up (){
@@ -100,6 +118,18 @@ rmempty()
         for i in *; do [ ! -s $i ] && rm -rf $i; done
 }
 
+mvfilesto(){
+    if [[ "$#" -eq "1" ]];then
+        dir="$(pwd)/$1"
+        find . -maxdepth 1 -type f -exec mv {} $dir \;
+    else
+        echo "Usage: mvfilesto subdirectory"
+    fi
+}
+mysstat(){
+    jobid="$1"
+    sstat --format=JobID%15,AveCPU%15,AvePages%15,AveRSS%15,AveVMSize%15,AveDiskWrite -j ${jobid}.batch
+}
 # generate correct geometry format from Chem3D output .xyz file
 chemdrawxyz(){
     if [[ "$#" -eq "1" ]];then
@@ -119,12 +149,19 @@ coordinates(){
         echo "Insufficient arguments: coordinates filename"
     fi
 }
+gaucoordinates(){
+    if [[ ! -z "$1" ]];then
+        awk '/Standard orientation/{r=""};/Standard orientation/,/Rotational constants/{r=(r=="")? $0 : r RS $0};END{print r}' $1 | head -n-2 | tail -n+5 | awk '{if ($2 == "1") {$2 = "H"}; if ($2 == "6") {$2 = "C"}; if ($2 == "7") {$2 = "N"}; if ($2 == "8") {$2 = "O"}; printf(" %3s \t%14s \t%14s \t%14s\n",$2,$4,$5,$6)}' > $1.xyz
+    else   
+        echo "Insufficient arguments: coordinates filename."
+    fi     
+}  
 # extract the coordinates from sqm geometry optimization files
 sqmcoordinates(){
     if [[ ! -z "$1" ]];then
         awk '/Final Structure/{r=""};/Final Structure/,/Calculation Completed/{r=(r=="")? $0 : r RS $0};END{print r}' $1 | head -n-2 | tail -n+5 | awk '{printf(" %3s \t%14s \t%14s \t%14s\n",$4,$5,$6,$7)}' > ${1%.*}_sqm.xyz
     else
-        echo "Insufficient arguments"
+        echo "Insufficient arguments. Syntax: sqmcoordinates sqm_output_file_name"
     fi
 }
 # extract the orbitals from NWChem output files
@@ -150,18 +187,36 @@ orbitals(){
 # grep the energy and oscillator strength data from the NWChem TDDFT output files, and calculate the integrated OS
 dos () {
     if [[ ! -z "$1" ]];then
-        awk '/'Root'/ {print $7}' $1 > $1.ene
+        awk -v counter=1 '/'Root'/ {if (counter < 1000) {print $7;counter++} else {print $6;counter++} }' $1 > $1.ene
         awk '/'Oscillator'/ {print $4}' $1 > $1.dos
         title="$1"
         paste $1.ene $1.dos | column -s $'\t' -t > $1.DOSD0
         IOS=0
-        awk -F" " -v name="$title" 'BEGIN {print name; print "delta E(eV)\tOS\t\tIntegrated OS";}
-                {IOS=IOS+$2;$(NF+1)=IOS;}1' OFS="\t\t" $1.DOSD0 > $1.DOSD
+        awk -F" " -v name="$title" 'BEGIN {print name; print "delta E(eV)\tOS\tIntegrated OS";} {IOS=IOS+$2;$(NF+1)=IOS;}1' OFS="\t" $1.DOSD0 > $1.DOSD
+        #awk -F" " -v name="$title" 'BEGIN {print name; print "delta E(eV)\tOS\t\tIntegrated OS";} {IOS=IOS+$2;$(NF+1)=IOS;}1' OFS="\t\t" $1.DOSD0 > $1.DOSD
         rm -f $1.ene $1.dos $1.DOSD0
      else
-        echo "Insufficient arguments"
+        echo "Insufficient arguments. Syntax: dos myOutputFileName.out"
      fi
 }
+# grep the energy and oscillator strength data from the NWChem TDDFT output files, and calculate the integrated OS
+xge () {
+    if [[ ! -z "$1" ]];then
+        awk '/'Root'/ {print $7}' $1 > $1.ene
+        #awk '/'"Transition Moments    X"'/ {print($4,$6,$8)}' $1 > $1.xge0 
+        #awk '{xge2=($1^2+$2^2+$3^2)*0.280028;$(NF+1)=xge2;}1' $1.xge0 > $1.xge
+        awk '/'"Transition Moments    X"'/ {print sprintf("%.5f", ($4^2+$6^2+$8^2)*0.280028297);}' $1 > $1.xge 
+        awk '/'Oscillator'/ {print $4}' $1 > $1.dos
+        title="$1"
+        paste $1.ene $1.xge $1.dos | column -s $'\t' -t > $1.DOSD0
+        IOS=0
+        awk -F" " -v name="$title" 'BEGIN {print name; print "delta E(eV) r^2(A^2) OS";} {;}1' OFS="\t\t" $1.DOSD0 > $1.dip
+        rm -f $1.ene $1.dos $1.DOSD0 $1.xge
+    else
+        echo "No argument supplied"
+    fi 
+}       
+
 # grep the energy and oscillator strength data from the Gaussian TDDFT output files, and calculate the integrated OS
 dosgau () {
     if [[ ! -z "$1" ]];then
@@ -194,6 +249,22 @@ dosatom () {
         echo "Insufficient arguments"
      fi
 }
+# generate peptide dimer seperated by 4.6 A       
+makedimer(){                                      
+    if [[ "$#" -eq "2" ]];then                
+        first="$1"                            
+        awk -F" " -v name="$first" '{$4=sprintf("%.8f", $4+2.3);}1' OFS="\t\t" $1.xyz > $1_up.xyz
+        second="$2"                           
+        awk -F" " -v name="$second" '{$4=sprintf("%.8f", $4-2.3);}1' OFS="\t\t" $2.xyz > $2_down.xyz
+        cat $1_up.xyz > $1_$2.xyz             
+        cat $2_down.xyz >> $1_$2.xyz          
+        rm $1_up.xyz $2_down.xyz              
+    else                                      
+        echo "Insufficient arguments"         
+        echo "Syntex: makedimer dimer1 dimer2"                                                                                                                                 
+
+    fi                                        
+}
 # grep the orbital energies from the NWChem TDDFT output files
 ene () {
     if [[ ! -z "$1" ]];then
@@ -205,7 +276,7 @@ ene () {
 
 
 # to find the integrated os data point at certain excitation energy
-findpoint () {
+findsinglepoint () {
    if [[ ! -z "$1" && ! -z "$2" ]];then
         limit="$2"
 #       awk -F"\t\t" -v point="$limit" '$1<=point{print $1, $3)}' OFS="   " $1.DOSD > $1.point0
@@ -229,47 +300,49 @@ res(){
                 mv $1.movecs $1_$2.movecs
                 mv $1.out $1_$2.out
                 mv $1.err $1_$2.err
-                vi $1.nw
+                vim $1.nw
         fi
 }
 # duplicate the nw files that are similar to each other except for some minor parameters
 dup (){
-   if [[ ! -z "$1" && ! -z "$2" ]];then
-        if [ -s $1.sh ];then
-                sed 's/'"$1"'/'"$2"'/g' $1.sh > $2.sh
-                vi $2.sh
-        else
-                sed 's/'"$1"'/'"$2"'/g' $1.q > $2.q
-                vi $2.q
-        fi
-        if [ -s $1.nw ];then
-                sed 's/'"$1"'/'"$2"'/g' $1.nw > $2.nw
-                vi $2.nw
-        else
-                sed 's/'"$1"'/'"$2"'/g' $1.inp > $2.inp
-                vi $2.inp
-        fi
-   else
-        echo "Insufficient arguments"
-   fi
+    if [[ ! -z "$1" && ! -z "$2" ]];then
+        for postscript in "nw" "inp" "sh" "q" "com";do                                                                                                                              
+            if [ -s $1.${postscript} ];then
+                sed 's/'"$1"'/'"$2"'/g' $1.${postscript} > $2.${postscript}
+                vim $2.${postscript}
+            fi
+        done
+    else 
+        echo "No full argument supplied"
+    fi   
 }
+
 # change nodes
 to_et1_old(){
-    if [[ -s "$1.sh" ]];then
-        sed -i 's/SBATCH -p et2/SBATCH -p et1_old/g;s/6.5-et2/6.5-et1_old_multinode/g' $1.sh 
-        vi $1.sh
+    if [[ -s "$1" ]];then
+        sed -i 's/SBATCH -p et2/SBATCH -p et1_old/g;s/6.5-et2/6.5-et1_old_multinode/g' $1 
+        vim $1
     else
-        echo "File $1.sh does not exist."
+        echo "File $1 does not exist."
     fi
 }
 to_et2(){
-    if [[ -s "$1.sh" ]];then
-        sed -i 's/SBATCH -p et1_old/SBATCH -p et2/g;s/6.5-et1_old_multinode/6.5-et2/g' $1.sh
-        vi $1.sh
+    if [[ -s "$1" ]];then
+        sed -i 's/SBATCH -p et1_old/SBATCH -p et2/g;s/6.5-et1_old_multinode/6.5-et2/g' $1
+        vim $1
     else
-        echo "File $1.sh does not exist."
+        echo "File $1 does not exist."
     fi
 }
+# grep the total energy from geometry optimization NWChem output files
+grepene(){
+    grep "Total DFT" $1 | tail -1
+}
+# grep the energies from geometry optimization NWChem output files
+grepdft(){
+    grep "Total DFT" $1
+}
+
 
 # submit jobs in batch
 sbatchfiles(){
@@ -294,4 +367,63 @@ gccp(){
     if [[ -s $1 ]];then
         gcc -o ${1%.*} $1 -lm
     fi
+}
+# calculate the effective electronic coupling between the initial and final state
+vif (){  
+    if [[ ! -z "$1" ]];then
+        Ei=$(grep "Total DFT" $1_is.out | tail -1 | awk '{print sprintf("%.12f", $5*27.21138505)}')
+        Ef=$(grep "Total DFT" $1_fs.out | tail -1 | awk '{print sprintf("%.12f", $5*27.21138505)}')
+        dEif=$(echo "$Ei - $Ef" | bc)
+        echo "deltaEIF = $dEif eV"
+
+        A=$(grep "Reactants/Products overlap S(RP)" $1_cig.out | sed 's/D/E/' | awk '{print $5}')
+        B=$(grep "Reactants/Products overlap S(RP)" $1_cfg.out | sed 's/D/E/' | awk '{print $5}')
+        S=$(grep "Reactants/Products overlap S(RP)" $1_cif.out | sed 's/D/E/' | awk '{print $5}')
+        echo "A=$A, B=$B, S=$S"
+
+        Vif=$(echo "scale=10; ($A * $B)/($A * $A - $B * $B) * $dEif * (1 - ($A * $A + $B * $B) * $S / (2 * $A * $B)) / (1 - $S * $S)" | bc)                        
+        echo "VIF = $Vif eV"
+    else 
+        echo "Insufficient arguments: vif filename"
+    fi   
+}        
+chbashrc(){
+    vim $HOME/.bashrc
+    source $HOME/.bashrc
+}      
+sortpdb(){
+    if [[ "$#" -eq "2" ]];then 
+        cp $1 ${1%.*}_unsorted.pdb
+        sort -b -k6,6 -k3.2,3.3 < $1 | sed '1d' > $1.tmp
+        if [[ "$2" -eq "gau" ]];then
+            awk '{print sprintf("%4s%7d%5s%4s%2s%4s%12s%8s%8.3f%24s", $1,NR,$3,$4,$5,$6,$7,$8,$9,$10)}' $1.tmp > $1
+        else
+            awk '{print sprintf("%4s%7d%5s%4s%2s%4s%12s%8s%8s%6s%6s%7s%5s", $1,NR,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)}' $1.tmp > $1
+        fi
+        echo 'END' >> $1
+        rm $1.tmp
+    else 
+        echo "Syntax: sortpdb pdbfilename gau(or full)"
+    fi
+}
+shiftby(){
+    if [[ "$#" -eq "3" ]];then 
+        awk -v delta=$2 '{print sprintf("%4s%7d%5s%4s%2s%4s%12s%8s%8.3f%24s", $1,NR,$3,$4,$5,$6,$7,$8,($9 + delta),$10)}' $1 > ${1%.*}_$3.pdb
+        sed -i '$ d' ${1%.*}_$3.pdb
+        echo 'END' >> ${1%.*}_$3.pdb
+    else 
+        echo "Syntax: shiftby gau-pdbfilename shifted-amount postfix"
+    fi
+}
+vmdtcl(){
+    vmd -dispdev text -e $1
+}
+elepreparegau(){
+    if [[ "$#" -eq "10" ]];then
+        for((i=$1;i<=$2;i=i+$3));do
+            gauprepare.sh $4 $5_$i $6 $7 $8 $9 "SCF=(NoSymm,Conver=9,MaxCycle=1000) TD=(Nstates=${10}) Field=X+$((${i}*10)) NoSym"
+        done
+    else 
+        echo "Usage: eleprepare lowlimit maxlimit grid filename extension mem-per-cpu ntasks basis-set functional nroot"                                                             
+    fi   
 }

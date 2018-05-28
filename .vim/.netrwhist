@@ -1,3 +1,9 @@
 let g:netrw_dirhistmax  =10
-let g:netrw_dirhist_cnt =1
-let g:netrw_dirhist_1='/home/lz91/.ssh'
+let g:netrw_dirhist_cnt =7
+let g:netrw_dirhist_1='/home/lz91/peptides/parallel/hf/group2/mdrun'
+let g:netrw_dirhist_2='/home/lz91/.vim'
+let g:netrw_dirhist_3='/home/lz91/peptides/antiparallel/kf/ptmd/mdrun'
+let g:netrw_dirhist_4='/home/lz91/peptides/antiparallel/kf/ptmd/psfopt'
+let g:netrw_dirhist_5='/home/lz91/peptides/antiparallel/kf/ptmd/mdrun/hbonds/467-303'
+let g:netrw_dirhist_6='/home/lz91/elefield/polyenes/c48h50/gaussian'
+let g:netrw_dirhist_7='/home/lz91/peptides/antiparallel/kf/ptmd/pbc/mdrun/hbonds/467-632'

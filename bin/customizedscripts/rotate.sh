@@ -17,6 +17,6 @@ if [[ ! -z "$1" ]];then
 
 else
 	echo "Insufficient arguments"
-	echo "Syntex: memnw.sh filename extension [memory(mb) #nodes ntasks-per-node]-optional"
+	echo "rotate.sh xyz-filename"
 fi
 
