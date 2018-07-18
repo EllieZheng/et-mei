@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ "$#" -eq "4" ]];then
+if [[ "$#" -eq "5" ]];then
 
 pardir=$1
 filename=$2
@@ -14,11 +14,11 @@ fi
 
 # MD parameters
 firsttime="5000000"
-steps="45000000" # 50 ns
+steps="100000000" # 100 ns
 stepsize="1"     # 1 fs
 dcdfreq="500"    # 0.1 ps
 #msm="${radius}"
-msm="30"
+msm=$5
 
 # file and directory
 psfdir="psfopt"
@@ -162,5 +162,5 @@ echo -e "dynamics config file done.\n"
         echo "Equilibration does not exist. Run gasequilibration first."
     fi
 else
-    echo "Syntax: gasdynamics.sh pardir filename radius iond?(0:yes,1:no)"
+    echo "Syntax: gasdynamics.sh pardir filename radius iond?(0:yes,1:no) sphere-radius"
 fi

@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# This file is to generate .q(.sh)/.nw files for geometry optimization 
-# Default is pvtz, b3lyp
-# filename=$1, extension(method)=$2, memory=$3, nodes=$4 ntasks=$5 -p=$6
 
 if [[ "$#" -eq "4" ]];then
     file=$1
@@ -36,7 +33,7 @@ if [[ "$#" -eq "4" ]];then
     oldfirsttime=$(grep "firsttimestep" ${file}.conf | awk '{print $2}')
     laststep=$(tail -50 ${bakfilename}.log | awk '/WRITING VELOCITIES TO RESTART FILE/ {print $8}' | tail -1)
     oldsteps=$(grep "run " ${file}.conf | awk '{print $2}')
-    totalsteps=80000000
+    totalsteps=100000000
     #newsteps=$((${totalsteps}-${laststep}))
     newsteps=$((${oldsteps}-${laststep}))
     echo "restart $file from $laststep for another $newsteps steps"

@@ -15,7 +15,7 @@ fi
 
 # MD parameters
 firsttime="5000000"
-steps="80000000" # 80 ns
+steps="100000000" # 100 ns
 stepsize="1"      # 1 fs
 dcdfreq="1000"    # 1 ps
 #msm="${radius}"

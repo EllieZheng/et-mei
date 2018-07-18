@@ -1,12 +1,12 @@
 #!/bin/bash
 
-if [[ "$#" -eq "3" ]];then
+if [[ "$#" -eq "2" ]];then
 
 filename=$1
 radius=$2
 here=$(pwd)
 np=20 
-msm=$3
+msm=$2
 
 psfdir="psfopt"
 mddir="mdrun"
@@ -83,5 +83,5 @@ endmsg4
 
 else
     echo "Insufficient argument. Make sure you are in the parent directory."
-    echo "namdmd.sh filename radius"
+    echo "namdmd.sh filename radius(=sphere-radius)"
 fi

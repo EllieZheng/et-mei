@@ -1,9 +1,10 @@
 #!/bin/bash
 
-if [[ "$#" -eq "1" ]];then
+if [[ "$#" -eq "2" ]];then
 
 filename=$1
 radius=0
+msm=$2
 here=$(pwd)
 np=20
 
@@ -31,13 +32,13 @@ cp ${here}/${psfdir}/${filename}.psf ${here}/${psfdir}/${outputname}.psf
 center-of-mass.sh ${here}/${psfdir} ${filename}
 
 # minimization 2: the whole system
-gasminimization.sh ${here} ${filename} ${radius} $neutral
+gasminimization.sh ${here} ${filename} ${radius} $neutral ${msm}
 
 # equilibration
-gasequilibration.sh ${here} ${filename} ${radius} $neutral
+gasequilibration.sh ${here} ${filename} ${radius} $neutral ${msm}
 
 # production dynamics
-gasdynamics.sh ${here} ${filename} ${radius} $neutral 
+gasdynamics.sh ${here} ${filename} ${radius} $neutral  ${msm}
 
 
 cat << endmsg4 > ${here}/${mddir}/run_${outputname}.q
@@ -47,7 +48,7 @@ cat << endmsg4 > ${here}/${mddir}/run_${outputname}.q
 #SBATCH -N 1
 #SBATCH -n $np
 #SBATCH --mem-per-cpu=1500
-#SBATCH -t 15-00:00:00
+#SBATCH -t 30-00:00:00
 #SBATCH -J ${outputname}
 #SBATCH --error=run_${outputname}.err
 #SBATCH -o run_${outputname}.slurm
@@ -75,5 +76,5 @@ endmsg4
 
 else
     echo "Insufficient argument. Make sure you are in the parent directory."
-    echo "gasphasemd.sh filename"
+    echo "gasphasemd.sh filename sphere-radius"
 fi

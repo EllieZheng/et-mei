@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ "$#" -eq "4" ]];then
+if [[ "$#" -eq "5" ]];then
 
 pardir=$1
 filename=$2
@@ -17,7 +17,7 @@ steps="5000000"  # 5 ns
 stepsize="1"     # 1 fs
 dcdfreq="500"    # 0.5 ps
 #msm="${radius}"
-msm="30"
+msm=$5
 
 # file and directory
 psfdir="psfopt"
@@ -159,5 +159,5 @@ echo -e "equilibration config file done.\n"
         echo "System minimization does not exist. Run gasminimization first."
     fi
 else
-    echo "Syntax: gasequilibration.sh pardir filename radius iond?(0:yes,1:no)"
+    echo "Syntax: gasequilibration.sh pardir filename radius iond?(0:yes,1:no) sphere-radius"
 fi

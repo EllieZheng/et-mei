@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [[ "$#" -eq "4" ]];then
+if [[ "$#" -eq "5" ]];then
 
 pardir=$1
 filename=$2
@@ -17,7 +17,7 @@ steps="20000" # 10 ps
 stepsize="1"     # 1 fs
 dcdfreq="500"    # 0.5 ps
 #msm="${radius}"
-msm="30"
+msm=$5
 
 # file and directory
 psfdir="psfopt"
@@ -129,5 +129,5 @@ echo -e "minimization config file done.\n"
 #vim  ${pardir}/${mddir}/${outputname}_${postfix}.conf
 
 else
-    echo "Syntax: gasminimization.sh pardir filename radius iond?(0:yes,1:no)"
+    echo "Syntax: gasminimization.sh pardir filename radius iond?(0:yes,1:no) sphere-radius"
 fi

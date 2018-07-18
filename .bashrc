@@ -53,6 +53,9 @@ export PATH="$HOME/bin/Mathematica/10.4/Executables":$PATH
 export PATH="$HOME/bin/customizedscripts":$PATH
 export PATH="$HOME/bin/customizedscripts/md":$PATH
 export PATH="/home/software/VMD.1.9.2/lib/vmd/plugins/LINUXAMD64/bin/catdcd5.1":$PATH
+export PATH="/home/lz91/bin/anaconda3/bin:$PATH"
+#topology /home/software/VMD.1.9.2/lib/vmd/plugins/noarch/tcl/readcharmmtop1.1/top_all27_prot_lipid_na.inp
+
 #export PATH="/home/software/nwchem-6.5/bin":$PATH
 #export PATH="/home/software/nwchem-6.5-et1-old/bin":$PATH
 #export PATH="/home/software/openmpi-1.8.6/bin":$PATH
@@ -149,6 +152,7 @@ coordinates(){
         echo "Insufficient arguments: coordinates filename"
     fi
 }
+
 gaucoordinates(){
     if [[ ! -z "$1" ]];then
         awk '/Standard orientation/{r=""};/Standard orientation/,/Rotational constants/{r=(r=="")? $0 : r RS $0};END{print r}' $1 | head -n-2 | tail -n+5 | awk '{if ($2 == "1") {$2 = "H"}; if ($2 == "6") {$2 = "C"}; if ($2 == "7") {$2 = "N"}; if ($2 == "8") {$2 = "O"}; printf(" %3s \t%14s \t%14s \t%14s\n",$2,$4,$5,$6)}' > $1.xyz
@@ -427,3 +431,12 @@ elepreparegau(){
         echo "Usage: eleprepare lowlimit maxlimit grid filename extension mem-per-cpu ntasks basis-set functional nroot"                                                             
     fi   
 }
+# extract the distance from NWChem geometry optimization files
+bondlength(){
+    if [[ ! -z "$1" ]];then
+        awk '/center one/{r=""};/center one/,/number of included internuclear distances/{r=(r=="")? $0 : r RS $0};END{print r}' $1 | head -n-2 | tail -n+3 | awk '{printf(" %3s %3s %3s %3s \t%14s\n",$1,$2,$4,$5,$9)}' > ${1%.*}.bondlength
+    else
+        echo "Insufficient arguments: bondlength filename"
+    fi
+}
+

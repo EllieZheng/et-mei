@@ -56,7 +56,7 @@ set nofoldenable "close foldmode when opening vim
 set wildmenu " Better command-line completion
 set cursorline
 set cursorcolumn
-" set number
+set number
 " highlight LineNr ctermfg=102  ctermbg=235
 set showcmd " Show partial commands in the last line of the screen
 set laststatus=2
