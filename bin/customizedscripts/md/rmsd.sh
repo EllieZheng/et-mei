@@ -12,7 +12,7 @@ molname=$2
 extension=$3 # for example, "md"
 
 if [[ "$4" -eq "10" ]];then
-    chain="all chain D or chain E"
+    chain="all chain E or chain F"
 else
     chain="all chain C or chain D"
 fi
