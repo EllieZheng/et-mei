@@ -34,7 +34,7 @@ set mddir ${rootdir}/${mddir}
 set dcdname ${inputname}
 set outputfile1 [open "${rootdir}/${rmsddir}/${outputname}_protein.dat" w]
 set outputfile2 [open "${rootdir}/${rmsddir}/${outputname}_all.dat" w]
-set outputfile2 [open "${rootdir}/${rmsddir}/${outputname}_middle.dat" w]
+set outputfile3 [open "${rootdir}/${rmsddir}/${outputname}_middle.dat" w]
 set firstframe ${firstframe}
 set lastframe ${lastframe}
 set step ${step}
@@ -108,11 +108,11 @@ cat > ${rootdir}/${rmsddir}/${outputname}.q << endmsg2
 #SBATCH -t 1-00:00:00
 
 filename="${rootdir}/${rmsddir}/${outputname}"
-echo "=================================================================="
-echo "Start at \`date\`"
+echo "==================================================================" >> \${filename}.log
+echo "Start at \`date\`" >> \${filename}.log
 vmd -dispdev text -e \${filename}.tcl >> \${filename}.log
-echo "End at \`date\`"
-echo "=================================================================="
+echo "End at \`date\`" >> \${filename}.log
+echo "==================================================================" >> \${filename}.log >> \${filename}.log
 
 endmsg2
 
