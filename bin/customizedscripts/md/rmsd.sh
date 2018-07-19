@@ -18,7 +18,7 @@ else
 fi
 
 if [[ ! -z "$5" ]];then
-    lastframe="$4"
+    lastframe="$5"
 else
     lastframe="-1"
 fi
@@ -27,7 +27,17 @@ firstframe="0"
 step="1"
 inputname="${molname}_${extension}"
 outputname="${molname}_${lastframe}_rmsd"
-tmpdcd="${rootdir}/${rmsddir}/${inputname}_tmp.dcd"
+
+# if making a copy of the dcd file. 
+if [[ "$6" -eq "1"  ]];then
+    tmpdcd="${rootdir}/${rmsddir}/${inputname}_tmp.dcd"
+    echo "copying the dcd file to a tmp file..."
+    cp ${rootdir}/${mddir}/${inputname}.dcd ${tmpdcd}
+    echo "copy completed."
+else
+    tmpdcd="${rootdir}/${mddir}/${inputname}.dcd"
+fi
+
 
 echo "creating tcl file for calculating the RMSD..."
 
@@ -118,14 +128,11 @@ filename="${rootdir}/${rmsddir}/${outputname}"
 echo "=================================================================="
 echo "Start at \`date\`"
 
-echo "copying the dcd file to a tmp file"
-cp ${rootdir}/${mddir}/${inputname}.dcd ${tmpdcd}
-echo "copy completed"
-
 vmd -dispdev text -e \${filename}.tcl >> \${filename}.log
 
-echo "remove the tmp dcd file"
-rm ${tmpdcd}
+wait
+echo "remove the tmp dcd file, if exists"
+rm -v "${rootdir}/${rmsddir}/${inputname}_tmp.dcd" 2> /dev/null
 
 echo "End at \`date\`"
 echo "==================================================================" 
@@ -137,5 +144,5 @@ sbatch ${rootdir}/${rmsddir}/${outputname}.q
 
 else
     echo "Make sure you are in the root directory. The output files will be in the /rmsd directory."
-    echo "Syntax: rmsd.sh parent-dir(e.g., \$(pwd)) molname extension(e.g., md) num-of-peptides(default:6) lastframe(default:-1. e.g., 40ns = 80000)"
+    echo "Syntax: rmsd.sh parent-dir(e.g., \$(pwd)) molname extension(e.g., md) num-of-peptides(default:6) lastframe(e.g.,40ns = 80000. default:-1) if-make-a-copy-of-dcd(yes:1, default:no)"
 fi
