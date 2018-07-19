@@ -10,8 +10,6 @@ mddir="mdrun"
 rmsddir="rmsd"
 molname=$2
 extension=$3 # for example, "md"
-inputname="${molname}_${extension}"
-outputname="${molname}_rmsd"
 
 if [[ "$4" -eq "10" ]];then
     chain="all chain D or chain E"
@@ -19,9 +17,17 @@ else
     chain="all chain C or chain D"
 fi
 
+if [[ ! -z "$5" ]];then
+    lastframe="$4"
+else
+    lastframe="-1"
+fi
+
 firstframe="0"
-lastframe="-1"
 step="1"
+inputname="${molname}_${extension}"
+outputname="${molname}_${lastframe}_rmsd"
+tmpdcd="${rootdir}/${rmsddir}/${inputname}_tmp.dcd"
 
 echo "creating tcl file for calculating the RMSD..."
 
@@ -29,9 +35,8 @@ mkdir -p ${rootdir}/${rmsddir}
 
 cat > ${rootdir}/${rmsddir}/${outputname}.tcl << endmsg1
 set molname ${molname}
-set psfdir ${rootdir}/${psfdir}
-set mddir ${rootdir}/${mddir}
-set dcdname ${inputname}
+set psf ${rootdir}/${psfdir}/${molname}.psf
+set dcd ${tmpdcd}
 set outputfile1 [open "${rootdir}/${rmsddir}/${outputname}_protein.dat" w]
 set outputfile2 [open "${rootdir}/${rmsddir}/${outputname}_all.dat" w]
 set outputfile3 [open "${rootdir}/${rmsddir}/${outputname}_middle.dat" w]
@@ -40,8 +45,8 @@ set lastframe ${lastframe}
 set step ${step}
 
 put "loading dcd..."
-mol new \${psfdir}/\${molname}.psf type psf
-mol addfile \${mddir}/\${dcdname}.dcd type dcd first \${firstframe} last \${lastframe} step \${step} filebonds 1 autobonds 1 waitfor all
+mol new \${psf} type psf
+mol addfile \${dcd} type dcd first \${firstframe} last \${lastframe} step \${step} filebonds 1 autobonds 1 waitfor all
 put "dcd loaded."
 set numframes [molinfo top get numframes]
 
@@ -106,13 +111,24 @@ cat > ${rootdir}/${rmsddir}/${outputname}.q << endmsg2
 #SBATCH -n 10
 #SBATCH --mem-per-cpu=1500
 #SBATCH -t 1-00:00:00
+#SBATCH -o ${rootdir}/${rmsddir}/${outputname}.slurm.%J
 
 filename="${rootdir}/${rmsddir}/${outputname}"
-echo "==================================================================" >> \${filename}.log
-echo "Start at \`date\`" >> \${filename}.log
+
+echo "=================================================================="
+echo "Start at \`date\`"
+
+echo "copying the dcd file to a tmp file"
+cp ${rootdir}/${mddir}/${inputname}.dcd ${tmpdcd}
+echo "copy completed"
+
 vmd -dispdev text -e \${filename}.tcl >> \${filename}.log
-echo "End at \`date\`" >> \${filename}.log
-echo "==================================================================" >> \${filename}.log >> \${filename}.log
+
+echo "remove the tmp dcd file"
+rm ${tmpdcd}
+
+echo "End at \`date\`"
+echo "==================================================================" 
 
 endmsg2
 
@@ -121,5 +137,5 @@ sbatch ${rootdir}/${rmsddir}/${outputname}.q
 
 else
     echo "Make sure you are in the root directory. The output files will be in the /rmsd directory."
-    echo "Syntax: rmsd.sh parent-dir(e.g., \$(pwd)) molname extension(e.g., md) num-of-peptides(default:6)"
+    echo "Syntax: rmsd.sh parent-dir(e.g., \$(pwd)) molname extension(e.g., md) num-of-peptides(default:6) lastframe(default:-1. e.g., 40ns = 80000)"
 fi
