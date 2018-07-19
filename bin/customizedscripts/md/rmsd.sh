@@ -2,7 +2,7 @@
 
 # This script is to generate and run tcl files for calculating the RMSD in VMD
 
-if [[ "$#" -eq "3" ]];then
+if [[ "$#" -gt "2" ]];then
 
 rootdir=$1
 psfdir="psfopt"
@@ -12,6 +12,12 @@ molname=$2
 extension=$3 # for example, "md"
 inputname="${molname}_${extension}"
 outputname="${molname}_rmsd"
+
+if [[ "$4" -eq "10" ]];then
+    chain="all chain D or chain E"
+else
+    chain="all chain C or chain D"
+fi
 
 firstframe="0"
 lastframe="-1"
@@ -28,6 +34,7 @@ set mddir ${rootdir}/${mddir}
 set dcdname ${inputname}
 set outputfile1 [open "${rootdir}/${rmsddir}/${outputname}_protein.dat" w]
 set outputfile2 [open "${rootdir}/${rmsddir}/${outputname}_all.dat" w]
+set outputfile2 [open "${rootdir}/${rmsddir}/${outputname}_middle.dat" w]
 set firstframe ${firstframe}
 set lastframe ${lastframe}
 set step ${step}
@@ -36,8 +43,9 @@ put "loading dcd..."
 mol new \${psfdir}/\${molname}.psf type psf
 mol addfile \${mddir}/\${dcdname}.dcd type dcd first \${firstframe} last \${lastframe} step \${step} filebonds 1 autobonds 1 waitfor all
 put "dcd loaded."
-
 set numframes [molinfo top get numframes]
+
+
 
 put "calculating rmsd for the protein only"
 
@@ -50,6 +58,8 @@ for {set i 0} {\$i < \$numframes} {incr i} {
     \$sel move [measure fit \$sel \$frame0]
     puts \$outputfile1 "[measure rmsd \$sel \$frame0]"
 }
+
+
 
 put "calculating rmsd for the whole system"
 
@@ -64,8 +74,23 @@ for {set i 0} {\$i < \$numframes} {incr i} {
 }
 
 
+
+put "calculating rmsd for the middle two peptides"
+
+set sel [atomselect top "$chain"]
+set frame0 [atomselect top "$chain" frame 0]
+
+### run rmsd calculation loop for the middle two peptides
+for {set i 0} {\$i < \$numframes} {incr i} {
+    \$sel frame \$i
+    \$sel move [measure fit \$sel \$frame0]
+    puts \$outputfile3 "[measure rmsd \$sel \$frame0]"
+}
+
+
 close \$outputfile1
 close \$outputfile2
+close \$outputfile3
 
 exit
 endmsg1
@@ -75,7 +100,7 @@ echo "creating sbatch file for calculating the RMSD..."
 cat > ${rootdir}/${rmsddir}/${outputname}.q << endmsg2
 #!/bin/bash
   
-#SBATCH -p et3
+#SBATCH -p et3,et4a
 #SBATCH -x et021,et033
 #SBATCH -N 1
 #SBATCH -n 10
@@ -83,7 +108,11 @@ cat > ${rootdir}/${rmsddir}/${outputname}.q << endmsg2
 #SBATCH -t 1-00:00:00
 
 filename="${rootdir}/${rmsddir}/${outputname}"
+echo "=================================================================="
+echo "Start at \`date\`"
 vmd -dispdev text -e \${filename}.tcl >> \${filename}.log
+echo "End at \`date\`"
+echo "=================================================================="
 
 endmsg2
 
@@ -92,5 +121,5 @@ sbatch ${rootdir}/${rmsddir}/${outputname}.q
 
 else
     echo "Make sure you are in the root directory. The output files will be in the /rmsd directory."
-    echo "Syntax: rmsd.sh parent-dir(e.g., \$(pwd)) molname extension(e.g., md)"
+    echo "Syntax: rmsd.sh parent-dir(e.g., \$(pwd)) molname extension(e.g., md) num-of-peptides(default:6)"
 fi
