@@ -44,7 +44,7 @@ gasdynamics.sh ${here} ${filename} ${radius} $neutral  ${msm}
 cat << endmsg4 > ${here}/${mddir}/run_${outputname}.q
 #!/bin/bash
   
-#SBATCH -p et3
+#SBATCH -p et3,et4a
 #SBATCH -N 1
 #SBATCH -n $np
 #SBATCH --mem-per-cpu=1500

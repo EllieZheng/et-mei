@@ -36,8 +36,8 @@ alias alert='notify-send --urgency=low -i "$([ $? = 0 ] && echo terminal || echo
 
 # slurm commands
 alias sqlz='date;squeue -o "%.9i %.9P %.40j %.8u %.2t %.10M %.6D %R" -u lz91'
-alias sqet='squeue -o "%.9i %.9P %.40j %.8u %.2t %.10M %.6D %R" -p et2,et1_old,et1_new,et3,et3short,et2_medmem,et3_medmem'
-alias sqet3='squeue -o "%.9i %.9P %.40j %.8u %.2t %.10M %.6D %R" -p et3,et3_medmem'
+alias sqet='squeue -o "%.9i %.9P %.40j %.8u %.2t %.10M %.6D %R" -p et2,et1_old,et1_new,et3,et3short,et2_medmem,et3_medmem,et4a'
+alias sqa='squeue -o "%.9i %.9P %.40j %.8u %.2t %.10M %.6D %R" -p et3,et3_medmem,et4a'
 alias etmem='scontrol -o show nodes | awk '"'"' {print $1,"\t", $4,"\t", $6,"\t", $14,"\t", $15,"\t", $18}'"'"' | grep "et"'
 alias etinfo='sinfo | grep "et"'
 export dnb03='lz91@dnb03.chem.duke.edu'
